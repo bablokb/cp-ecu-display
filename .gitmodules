@@ -1,0 +1,6 @@
+[submodule "external/base-app"]
+	path = external/base-app
+	url = git@github.com:bablokb/circuitpython-base-app.git
+[submodule "external/ecu_reader"]
+	path = external/ecu_reader
+	url = git@github.com:bablokb/circuitpython-ecu_reader.git
