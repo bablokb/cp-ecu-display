@@ -14,6 +14,7 @@ import terminalio
 import vectorio
 
 from adafruit_display_text import label
+from adafruit_display_shapes.arc import Arc
 from adafruit_bitmap_font import bitmap_font
 
 from settings import secrets, hw_config, app_config
@@ -77,10 +78,32 @@ class UIProvider:
                                  anchored_position=(w2,h_time_txt))
 
     # colored arc as a sort of gauge
-    # TODO: implement
+    arc_static = Arc(
+      x=w2,
+      y=h2,
+      radius=min(w2,h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
+      angle=270,
+      direction=90,   # i.e. top
+      segments=UI_SETTINGS.ARC_SEGMENTS,
+      arc_width=UI_SETTINGS.ARC_WIDTH,
+      outline=UI_SETTINGS.FG_COLOR
+      )
+
+    self._arc = Arc(
+      x=w2,
+      y=h2,
+      radius=min(w2,h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
+      angle=270,
+      direction=90,   # i.e. top
+      segments=UI_SETTINGS.ARC_SEGMENTS,
+      arc_width=UI_SETTINGS.ARC_WIDTH,
+      fill=UI_PALETTE[COLOR.RED],
+      )
 
     # add objects to group
     self._view = displayio.Group()
+    self._view.append(arc_static)
+    self._view.append(self._arc)
     self._view.append(self._power_txt)
     self._view.append(self._time_txt)
 
@@ -95,9 +118,18 @@ class UIProvider:
     # current power
     self._power_txt.text  = f"{data['current_power']}W"
     self._power_txt.color = color
+
     # pretty-print time of last update
     self._time_txt.text = data['timestamp'].split(' ')[1][:5]
     self._time_txt.color = color
+
+    # calculate size of arc
+    angle = data['current_power']/app_config.power_max*UI_SETTINGS.ARC_MAX_ANGLE
+    self.msg(f"update_ui(): {angle=}")
+    self._arc.fill = color
+    self._arc.angle = angle
+    self._arc.direction = (90+UI_SETTINGS.ARC_MAX_ANGLE/2) - angle
+    self.msg(f"update_ui(): direction={self._arc.direction}")
     return self._view
 
   # --- clear UI and free memory   -------------------------------------------
