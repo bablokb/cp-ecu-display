@@ -48,7 +48,7 @@ class UIProvider:
     # calculate size and direction of arc
     angle = power/app_config.power_max*UI_SETTINGS.ARC_MAX_ANGLE
     self.msg(f"update_ui(): {angle=}")
-    direction = (90+UI_SETTINGS.ARC_MAX_ANGLE/2) - angle
+    direction = (90+UI_SETTINGS.ARC_MAX_ANGLE/2) - angle/2
     self.msg(f"update_ui(): {direction=}")
 
     # create arc
