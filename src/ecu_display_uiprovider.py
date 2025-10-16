@@ -39,6 +39,7 @@ class UIProvider:
     for index, r in enumerate(ranges):
       if value < r:
         return colors[index-1]
+    return colors[-1]
 
   # --- create arc-object   --------------------------------------------------
 
