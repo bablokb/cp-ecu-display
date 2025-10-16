@@ -40,6 +40,29 @@ class UIProvider:
       if value < r:
         return colors[index-1]
 
+  # --- create arc-object   --------------------------------------------------
+
+  def _create_arc(self, power, color):
+    """ create arc according to data """
+
+    # calculate size and direction of arc
+    angle = power/app_config.power_max*UI_SETTINGS.ARC_MAX_ANGLE
+    self.msg(f"update_ui(): {angle=}")
+    direction = (90+UI_SETTINGS.ARC_MAX_ANGLE/2) - angle
+    self.msg(f"update_ui(): {direction=}")
+
+    # create arc
+    return Arc(
+      x=self._w2,
+      y=self._h2,
+      radius=min(self._w2,self._h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
+      angle=angle,
+      direction=direction,
+      segments=UI_SETTINGS.ARC_SEGMENTS,
+      arc_width=UI_SETTINGS.ARC_WIDTH,
+      fill=color,
+      )
+
   # --- print debug-message   ------------------------------------------------
 
   def msg(self,text):
@@ -57,8 +80,8 @@ class UIProvider:
 
     # save display
     self._display = display
-    w2 = int(display.width/2)
-    h2 = int(display.height/2)
+    self._w2 = int(display.width/2)
+    self._h2 = int(display.height/2)
 
     # text label for current power
     font_L = bitmap_font.load_font(UI_SETTINGS.FONT_L)
@@ -66,22 +89,22 @@ class UIProvider:
                                  text='0 W',
                                  color=UI_PALETTE[COLOR.RED],
                                  anchor_point=(0.5,0.5),
-                                 anchored_position=(w2,h2))
+                                 anchored_position=(self._w2,self._h2))
 
     # text label for time
     font_S = bitmap_font.load_font(UI_SETTINGS.FONT_S)
-    h_time_txt = h2 + self._power_txt.height/2 + UI_SETTINGS.PADDING
+    h_time_txt = self._h2 + self._power_txt.height/2 + UI_SETTINGS.PADDING
     self._time_txt = label.Label(font_S,
                                  text='00:00',
                                  color=UI_PALETTE[COLOR.RED],
                                  anchor_point=(0.5,0),
-                                 anchored_position=(w2,h_time_txt))
+                                 anchored_position=(self._w2,h_time_txt))
 
     # colored arc as a sort of gauge
     arc_static = Arc(
-      x=w2,
-      y=h2,
-      radius=min(w2,h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
+      x=self._w2,
+      y=self._h2,
+      radius=min(self._w2,self._h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
       angle=270,
       direction=90,   # i.e. top
       segments=UI_SETTINGS.ARC_SEGMENTS,
@@ -89,23 +112,12 @@ class UIProvider:
       outline=UI_SETTINGS.FG_COLOR
       )
 
-    self._arc = Arc(
-      x=w2,
-      y=h2,
-      radius=min(w2,h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
-      angle=270,
-      direction=90,   # i.e. top
-      segments=UI_SETTINGS.ARC_SEGMENTS,
-      arc_width=UI_SETTINGS.ARC_WIDTH,
-      fill=UI_PALETTE[COLOR.RED],
-      )
-
     # add objects to group
     self._view = displayio.Group()
     self._view.append(arc_static)
-    self._view.append(self._arc)
     self._view.append(self._power_txt)
     self._view.append(self._time_txt)
+    self._view.append(displayio.Group())  # add dummy element
 
   # --- update ui   ----------------------------------------------------------
 
@@ -113,23 +125,19 @@ class UIProvider:
     """ update data: callback for Application """
 
     # map value of current_power to a color
-    color = self._get_power_color(data['current_power'])
+    power = data['current_power']
+    color = self._get_power_color(power)
 
     # current power
-    self._power_txt.text  = f"{data['current_power']}W"
+    self._power_txt.text  = f"{power}W"
     self._power_txt.color = color
 
     # pretty-print time of last update
     self._time_txt.text = data['timestamp'].split(' ')[1][:5]
     self._time_txt.color = color
 
-    # calculate size of arc
-    angle = data['current_power']/app_config.power_max*UI_SETTINGS.ARC_MAX_ANGLE
-    self.msg(f"update_ui(): {angle=}")
-    self._arc.fill = color
-    self._arc.angle = angle
-    self._arc.direction = (90+UI_SETTINGS.ARC_MAX_ANGLE/2) - angle
-    self.msg(f"update_ui(): direction={self._arc.direction}")
+    self._view[-1] = self._create_arc(power,color)
+    gc.collect()
     return self._view
 
   # --- clear UI and free memory   -------------------------------------------
