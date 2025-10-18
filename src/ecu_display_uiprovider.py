@@ -110,7 +110,8 @@ class UIProvider:
       direction=90,   # i.e. top
       segments=UI_SETTINGS.ARC_SEGMENTS,
       arc_width=UI_SETTINGS.ARC_WIDTH,
-      outline=UI_SETTINGS.FG_COLOR
+      outline=UI_SETTINGS.FG_COLOR,
+      fill=UI_SETTINGS.BG_COLOR,
       )
 
     # add objects to group
