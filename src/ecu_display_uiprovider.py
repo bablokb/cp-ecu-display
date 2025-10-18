@@ -52,8 +52,20 @@ class UIProvider:
     direction = (90+UI_SETTINGS.ARC_MAX_ANGLE/2) - angle/2
     self.msg(f"update_ui(): {direction=}")
 
-    # create arc
-    return Arc(
+    # background
+    bg_arc = Arc(
+      x=self._w2,
+      y=self._h2,
+      radius=min(self._w2,self._h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
+      angle=270,
+      direction=90,   # i.e. top
+      segments=UI_SETTINGS.ARC_SEGMENTS,
+      arc_width=UI_SETTINGS.ARC_WIDTH,
+      outline=UI_SETTINGS.FG_COLOR,
+      fill=UI_SETTINGS.BG_COLOR,
+      )
+
+    fg_arc = Arc(
       x=self._w2,
       y=self._h2,
       radius=min(self._w2,self._h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
@@ -63,6 +75,11 @@ class UIProvider:
       arc_width=UI_SETTINGS.ARC_WIDTH,
       fill=color,
       )
+
+    arc_view = displayio.Group()
+    arc_view.append(bg_arc)
+    arc_view.append(fg_arc)
+    return arc_view
 
   # --- print debug-message   ------------------------------------------------
 
@@ -101,22 +118,8 @@ class UIProvider:
                                  anchor_point=(0.5,0),
                                  anchored_position=(self._w2,h_time_txt))
 
-    # colored arc as a sort of gauge
-    arc_static = Arc(
-      x=self._w2,
-      y=self._h2,
-      radius=min(self._w2,self._h2)-UI_SETTINGS.ARC_WIDTH-UI_SETTINGS.MARGIN,
-      angle=270,
-      direction=90,   # i.e. top
-      segments=UI_SETTINGS.ARC_SEGMENTS,
-      arc_width=UI_SETTINGS.ARC_WIDTH,
-      outline=UI_SETTINGS.FG_COLOR,
-      fill=UI_SETTINGS.BG_COLOR,
-      )
-
     # add objects to group
     self._view = displayio.Group()
-    self._view.append(arc_static)
     self._view.append(self._power_txt)
     self._view.append(self._time_txt)
     self._view.append(displayio.Group())  # add dummy element
