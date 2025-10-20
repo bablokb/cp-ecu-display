@@ -7,6 +7,7 @@
 # Website: https://github.com/bablokb/cp-ecu-display
 # ----------------------------------------------------------------------------
 
+import gc
 import time
 from settings import app_config
 
@@ -41,6 +42,8 @@ class DataProvider:
     # setup interface
     self.msg("DataProvider: creating EcuReader")
     import ecu_reader
+    if not self._wifi.radio:
+      self._wifi.connect()
     self._inverter = ecu_reader.EcuReader(
       app_config.remote_ip,self._wifi.pool,
       port=getattr(app_config, "remote_port", 8899),
